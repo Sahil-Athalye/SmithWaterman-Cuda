@@ -281,6 +281,8 @@ int main(int argc, char **argv) {
     }
     if(maybeDNA) typeChar = 'N';
 
+    std::cout << "Alignment score: " << maxScore << "\n\n";
+
     // Output alignment in MSF (PileUp) format
     std::cout << "PileUp\n\n";
     std::printf("   MSF:   %d  Type: %c    Check:  %4d   ..\n\n", alignLen, typeChar, globalCheck);
