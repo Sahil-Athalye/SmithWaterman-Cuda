@@ -6,6 +6,8 @@
 #include <cctype>
 #include <cstdio>
 #include <algorithm>
+#include <chrono>  // For timing
+#include <iomanip>  // For std::setprecision
 
 // CUDA kernel to compute one anti-diagonal of the Smith-Waterman DP and direction matrices
 __global__ void sw_kernel(const char *seq1, const char *seq2, int len1, int len2, 
@@ -54,6 +56,9 @@ std::string extractBaseName(const std::string& filepath) {
 }
 
 int main(int argc, char **argv) {
+    // Start timing the execution
+    auto startTime = std::chrono::high_resolution_clock::now();
+    
     if(argc < 3) {
         std::cerr << "Usage: " << argv[0] << " <seq1.fasta> <seq2.fasta>\n";
         return 1;
@@ -280,6 +285,22 @@ int main(int argc, char **argv) {
         }
     }
     if(maybeDNA) typeChar = 'N';
+    
+    // Calculate and output execution time with microsecond precision
+    auto endTime = std::chrono::high_resolution_clock::now();
+    
+    // Calculate durations in different units for more precise reporting
+    auto durationMicro = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
+    auto durationNano = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
+    
+    // Output timing in the most appropriate unit
+    if (durationMicro < 10000) {  // Less than 10ms, show in microseconds
+        std::cerr << "GPU Execution time: " << durationMicro << " μs (" << durationNano << " ns)" << std::endl;
+    } else {
+        // For longer runtimes, show in milliseconds with microsecond precision
+        double durationMs = static_cast<double>(durationMicro) / 1000.0;
+        std::cerr << "GPU Execution time: " << std::fixed << std::setprecision(3) << durationMs << " ms" << std::endl;
+    }
 
     std::cout << "Alignment score: " << maxScore << "\n\n";
 
